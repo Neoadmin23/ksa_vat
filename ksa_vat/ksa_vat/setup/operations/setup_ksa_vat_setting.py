@@ -263,6 +263,9 @@ def ensure_standard_doc(file_path):
     if doc_data['doctype'] == 'Workspace' and not doc_data.get('title'):
         doc_data['title'] = doc_data.get('label') or doc_data['name']
 
+    if doc_data['doctype'] == 'Workspace' and not doc_data.get('content'):
+        doc_data['content'] = '[]'
+
     existing_doc = frappe.db.exists(doc_data['doctype'], doc_data['name'])
     if existing_doc:
         doc = frappe.get_doc(doc_data['doctype'], existing_doc)
