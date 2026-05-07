@@ -49,29 +49,48 @@ def create_default_ksa_vat_setting(company, company_abbr):
     for data in account_data:
         if data['type'] == 'Sales Account':
             for row in data['accounts']:
-                item_tax_template = row['item_tax_template']
-                item_tax_template = get_company_record_name(item_tax_template, company_abbr)
+                item_tax_template, account = get_setting_row_links(row, company_abbr)
+                if not item_tax_template or not account:
+                    continue
+
                 ksa_vat_setting.append('ksa_vat_sales_accounts', {
                     'title': row['title'],
                     'item_tax_template': item_tax_template,
-                    'account': get_tax_account(item_tax_template, row['account'], company_abbr)
+                    'account': account
                 })
 
         elif data['type'] == 'Purchase Account':
             for row in data['accounts']:
-                item_tax_template = row['item_tax_template']
-                item_tax_template = get_company_record_name(item_tax_template, company_abbr)
+                item_tax_template, account = get_setting_row_links(row, company_abbr)
+                if not item_tax_template or not account:
+                    continue
+
                 ksa_vat_setting.append('ksa_vat_purchase_accounts', {
                     'title': row['title'],
                     'item_tax_template': item_tax_template,
-                    'account': get_tax_account(item_tax_template, row['account'], company_abbr)
+                    'account': account
                 })
+
+    if not ksa_vat_setting.ksa_vat_sales_accounts and not ksa_vat_setting.ksa_vat_purchase_accounts:
+        return
 
     ksa_vat_setting.save()
 
 
 def get_company_record_name(record_name, company_abbr):
     return f'{record_name} - {company_abbr}'
+
+
+def get_setting_row_links(row, company_abbr):
+    item_tax_template = get_company_record_name(row['item_tax_template'], company_abbr)
+    if not frappe.db.exists('Item Tax Template', item_tax_template):
+        return None, None
+
+    account = get_tax_account(item_tax_template, row['account'], company_abbr)
+    if not frappe.db.exists('Account', account):
+        return None, None
+
+    return item_tax_template, account
 
 
 def get_tax_account(item_tax_template, fallback_account, company_abbr):
