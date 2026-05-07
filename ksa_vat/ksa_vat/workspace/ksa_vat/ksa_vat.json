@@ -33,10 +33,28 @@
    "type": "Link"
   },
   {
+    "hidden": 0,
+    "is_query_report": 0,
+    "label": "KSA VAT Setting",
+    "link_to": "KSA VAT Setting",
+    "link_type": "DocType",
+    "onboard": 0,
+    "type": "Link"
+  },
+  {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "KSA VAT Setting",
-   "link_to": "KSA VAT Setting",
+   "label": "Item Tax Template",
+   "link_to": "Item Tax Template",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Chart of Accounts",
+   "link_to": "Account",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"

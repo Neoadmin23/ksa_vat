@@ -5,17 +5,23 @@
             {
                 "title": "Standard rated Sales",
                 "item_tax_template": "KSA VAT 15%",
-                "account": "Output VAT - 15%"
+                "account": "Output VAT - 15%",
+                "tax_rate": 15,
+                "zatca_tax_category": "Standard"
             },
             {
                 "title": "Zero rated domestic sales",
                 "item_tax_template": "KSA VAT Zero",
-                "account": "VAT Zero"
+                "account": "VAT Zero",
+                "tax_rate": 0,
+                "zatca_tax_category": "Zero Rated"
             },
             {
                 "title": "Exempted sales",
                 "item_tax_template": "KSA VAT Exempted",
-                "account": "VAT Zero"
+                "account": "VAT Zero",
+                "tax_rate": 0,
+                "zatca_tax_category": "Exempted"
             }
         ]
     },
@@ -25,22 +31,29 @@
             {
                 "title": "Standard rated domestic purchases",
                 "item_tax_template": "KSA Vat 15% - Input",
-                "account": "Input Vat - 15%"
+                "account": "Input Vat - 15%",
+                "tax_rate": 15,
+                "zatca_tax_category": "Standard"
             },
             {
                 "title": "Imports subject to VAT paid at customs",
                 "item_tax_template": "KSA Excise 50%",
-                "account": "Excise 50%"
+                "account": "Excise 50%",
+                "tax_rate": 50
             },
             {
                 "title": "Zero rated purchases",
                 "item_tax_template": "KSA VAT Zero",
-                "account": "VAT Zero"
+                "account": "VAT Zero",
+                "tax_rate": 0,
+                "zatca_tax_category": "Zero Rated"
             },
             {
                 "title": "Exempted purchases",
                 "item_tax_template": "KSA VAT Exempted",
-                "account": "VAT Zero"
+                "account": "VAT Zero",
+                "tax_rate": 0,
+                "zatca_tax_category": "Exempted"
             }
         ]
     }

@@ -37,6 +37,10 @@ def create_default_ksa_vat_setting(company, company_abbr):
     if frappe.db.exists('KSA VAT Setting', {'company': company}):
         return
 
+    default_tax_account = get_default_tax_account(company, company_abbr)
+    if not default_tax_account:
+        return
+
     file_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'ksa_vat_settings.json')
     with open(file_path, 'r') as json_file:
         account_data = json.load(json_file)
@@ -49,7 +53,9 @@ def create_default_ksa_vat_setting(company, company_abbr):
     for data in account_data:
         if data['type'] == 'Sales Account':
             for row in data['accounts']:
-                item_tax_template, account = get_setting_row_links(row, company_abbr)
+                item_tax_template, account = get_setting_row_links(
+                    row, company, company_abbr, default_tax_account
+                )
                 if not item_tax_template or not account:
                     continue
 
@@ -61,7 +67,9 @@ def create_default_ksa_vat_setting(company, company_abbr):
 
         elif data['type'] == 'Purchase Account':
             for row in data['accounts']:
-                item_tax_template, account = get_setting_row_links(row, company_abbr)
+                item_tax_template, account = get_setting_row_links(
+                    row, company, company_abbr, default_tax_account
+                )
                 if not item_tax_template or not account:
                     continue
 
@@ -81,19 +89,71 @@ def get_company_record_name(record_name, company_abbr):
     return f'{record_name} - {company_abbr}'
 
 
-def get_setting_row_links(row, company_abbr):
-    item_tax_template = get_company_record_name(row['item_tax_template'], company_abbr)
+def get_setting_row_links(row, company, company_abbr, default_tax_account):
+    item_tax_template = ensure_item_tax_template(row, company, company_abbr, default_tax_account)
     if not frappe.db.exists('Item Tax Template', item_tax_template):
         return None, None
 
-    account = get_tax_account(item_tax_template, row['account'], company_abbr)
+    account = get_tax_account(item_tax_template, default_tax_account)
     if not frappe.db.exists('Account', account):
         return None, None
 
     return item_tax_template, account
 
 
-def get_tax_account(item_tax_template, fallback_account, company_abbr):
+def ensure_item_tax_template(row, company, company_abbr, default_tax_account):
+    item_tax_template = get_company_record_name(row['item_tax_template'], company_abbr)
+    if frappe.db.exists('Item Tax Template', item_tax_template):
+        return item_tax_template
+
+    tax_template = frappe.get_doc({
+        'doctype': 'Item Tax Template',
+        'title': row['item_tax_template'],
+        'company': company,
+        'taxes': [{
+            'tax_type': default_tax_account,
+            'tax_rate': row.get('tax_rate', 0)
+        }]
+    })
+
+    set_zatca_tax_category(tax_template, row.get('zatca_tax_category'))
+    tax_template.insert(ignore_permissions=True)
+    return tax_template.name
+
+
+def set_zatca_tax_category(tax_template, tax_category):
+    if not tax_category:
+        return
+
+    meta = frappe.get_meta('Item Tax Template')
+    if meta.has_field('zatca_tax_category'):
+        tax_template.zatca_tax_category = tax_category
+
+
+def get_default_tax_account(company, company_abbr):
+    account = frappe.db.get_value('Account', {
+        'company': company,
+        'account_number': '2300',
+        'account_name': 'Duties and Taxes'
+    }, 'name')
+
+    if account:
+        return account
+
+    account = frappe.db.get_value('Account', {
+        'company': company,
+        'account_name': 'Duties and Taxes'
+    }, 'name')
+
+    if account:
+        return account
+
+    return frappe.db.get_value('Account', {
+        'name': ['like', f'%Duties and Taxes%{company_abbr}']
+    }, 'name')
+
+
+def get_tax_account(item_tax_template, fallback_account):
     tax_account = frappe.db.get_value(
         'Item Tax Template Detail',
         {'parent': item_tax_template},
@@ -103,7 +163,7 @@ def get_tax_account(item_tax_template, fallback_account, company_abbr):
     if tax_account:
         return tax_account
 
-    return get_company_record_name(fallback_account, company_abbr)
+    return fallback_account
 
 def make_custom_fields():
     if frappe.db.exists('Custom Field', 'Sales Invoice-qr_code'):
