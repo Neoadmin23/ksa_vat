@@ -64,7 +64,8 @@ def get_setup_status(company=None):
     return {
         'companies': [get_company_setup_status(company_doc) for company_doc in companies],
         'qr_code_field': frappe.db.exists('Custom Field', 'Sales Invoice-qr_code') is not None,
-        'workspace': frappe.db.exists('Workspace', 'KSA VAT') is not None
+        'workspace': frappe.db.exists('Workspace', 'KSA VAT') is not None,
+        'workspace_content': frappe.db.get_value('Workspace', 'KSA VAT', 'content')
     }
 
 

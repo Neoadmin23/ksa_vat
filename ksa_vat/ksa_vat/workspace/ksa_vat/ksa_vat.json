@@ -1,7 +1,7 @@
 {
  "category": "Modules",
  "charts": [],
- "content": "[]",
+ "content": "[{\"id\":\"ksa_vat_header\",\"type\":\"header\",\"data\":{\"text\":\"KSA VAT\",\"level\":4,\"col\":12}},{\"id\":\"ksa_vat_setup\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"KSA VAT Setup Wizard\",\"col\":3}},{\"id\":\"ksa_vat_report\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"KSA VAT Report\",\"col\":3}},{\"id\":\"ksa_vat_setting\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"KSA VAT Setting\",\"col\":3}},{\"id\":\"ksa_vat_item_tax_template\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Item Tax Template\",\"col\":3}}]",
  "creation": "2021-08-01 11:42:36.074131",
  "developer_mode_only": 0,
  "disable_user_customization": 0,
@@ -78,5 +78,34 @@
  "owner": "Administrator",
  "pin_to_bottom": 0,
  "pin_to_top": 0,
- "shortcuts": []
+ "shortcuts": [
+  {
+   "color": "Blue",
+   "doc_view": "",
+   "label": "KSA VAT Setup Wizard",
+   "link_to": "ksa-vat-setup",
+   "type": "Page"
+  },
+  {
+   "color": "Green",
+   "doc_view": "",
+   "label": "KSA VAT Report",
+   "link_to": "KSA VAT",
+   "type": "Report"
+  },
+  {
+   "color": "Orange",
+   "doc_view": "List",
+   "label": "KSA VAT Setting",
+   "link_to": "KSA VAT Setting",
+   "type": "DocType"
+  },
+  {
+   "color": "Purple",
+   "doc_view": "List",
+   "label": "Item Tax Template",
+   "link_to": "Item Tax Template",
+   "type": "DocType"
+  }
+ ]
 }
