@@ -37,14 +37,18 @@ def create_ksa_vat_setting(self, method):
 
 @frappe.whitelist()
 def run_setup(company=None):
+    make_custom_fields()
+
     if company:
-        make_custom_fields()
-        ensure_setup_page()
-        ensure_workspace()
         company_doc = frappe.get_doc('Company', company)
         create_default_ksa_vat_setting(company_doc.name, company_doc.abbr)
     else:
-        after_install()
+        for company_doc in frappe.get_all(
+            'Company',
+            filters={'country': 'Saudi Arabia'},
+            fields=['name', 'abbr']
+        ):
+            create_default_ksa_vat_setting(company_doc.name, company_doc.abbr)
 
     frappe.db.commit()
     return get_setup_status(company)
