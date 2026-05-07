@@ -17,10 +17,19 @@
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Simplified KSA VAT",
+   "label": "KSA VAT",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "KSA VAT Setup Wizard",
+   "link_to": "ksa-vat-setup",
+   "link_type": "Page",
+   "onboard": 1,
+   "type": "Link"
   },
   {
    "dependencies": "GL Entry",
