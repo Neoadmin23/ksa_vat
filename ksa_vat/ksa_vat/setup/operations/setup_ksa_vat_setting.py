@@ -37,11 +37,10 @@ def create_ksa_vat_setting(self, method):
 
 @frappe.whitelist()
 def run_setup(company=None):
-    make_custom_fields()
-    ensure_setup_page()
-    ensure_workspace()
-
     if company:
+        make_custom_fields()
+        ensure_setup_page()
+        ensure_workspace()
         company_doc = frappe.get_doc('Company', company)
         create_default_ksa_vat_setting(company_doc.name, company_doc.abbr)
     else:
@@ -270,6 +269,7 @@ def ensure_standard_doc(file_path):
     if existing_doc:
         doc = frappe.get_doc(doc_data['doctype'], existing_doc)
         doc.update(doc_data)
+        doc.flags.ignore_version = True
         doc.save(ignore_permissions=True)
     else:
         frappe.get_doc(doc_data).insert(ignore_permissions=True)
