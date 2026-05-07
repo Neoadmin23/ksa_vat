@@ -57,7 +57,7 @@ app_license = "MIT"
 # ------------
 
 # before_install = "ksa_vat.install.before_install"
-# after_install = "ksa_vat.install.after_install"
+after_install = "ksa_vat.ksa_vat.setup.operations.setup_ksa_vat_setting.after_install"
 
 # Desk Notifications
 # ------------------

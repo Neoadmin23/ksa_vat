@@ -4,8 +4,8 @@
         "accounts": [
             {
                 "title": "Standard rated Sales",
-                "item_tax_template": "KSA VAT 5%",
-                "account": "VAT 5%"
+                "item_tax_template": "KSA VAT 15%",
+                "account": "Output VAT - 15%"
             },
             {
                 "title": "Zero rated domestic sales",
@@ -24,8 +24,8 @@
         "accounts": [
             {
                 "title": "Standard rated domestic purchases",
-                "item_tax_template": "KSA VAT 5%",
-                "account": "VAT 5%"
+                "item_tax_template": "KSA Vat 15% - Input",
+                "account": "Input Vat - 15%"
             },
             {
                 "title": "Imports subject to VAT paid at customs",

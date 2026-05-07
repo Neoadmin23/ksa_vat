@@ -111,6 +111,7 @@ def get_tax_data_for_each_vat_setting(vat_setting, filters, doctype):
 	total_taxable_amount, total_taxable_adjustment_amount, total_tax'''
 	from_date = filters.get('from_date')
 	to_date = filters.get('to_date')
+	company = filters.get('company')
 
 	# Initiate variables
 	total_taxable_amount = 0
@@ -120,12 +121,13 @@ def get_tax_data_for_each_vat_setting(vat_setting, filters, doctype):
 	invoices = frappe.get_list(doctype, 
 	filters ={
 		'docstatus': 1,
-		'posting_date': ['between', [from_date, to_date]]
+		'posting_date': ['between', [from_date, to_date]],
+		'company': company
 	}, 
 	fields =['name', 'is_return'])
 
 	for invoice in invoices:
-		invoice_items = frappe.get_list(f'{doctype} Item', 
+		invoice_items = frappe.get_all(f'{doctype} Item', 
 		filters ={
 			'docstatus': 1,
 			'parent': invoice.name,
@@ -160,11 +162,12 @@ def get_tax_amount(item_code, account_head, doctype, parent):
 	elif doctype == 'Purchase Invoice':
 		tax_doctype = 'Purchase Taxes and Charges'
 	
-	item_wise_tax_detail = frappe.get_value(tax_doctype, {
+	tax_details = frappe.get_all(tax_doctype, filters={
 		'docstatus': 1,
 		'parent': parent,
 		'account_head': account_head
-	}, 'item_wise_tax_detail')
+	}, fields=['item_wise_tax_detail'], limit_page_length=1)
+	item_wise_tax_detail = tax_details[0].item_wise_tax_detail if tax_details else None
 
 	tax_amount = 0
 	if item_wise_tax_detail and len(item_wise_tax_detail) > 0:

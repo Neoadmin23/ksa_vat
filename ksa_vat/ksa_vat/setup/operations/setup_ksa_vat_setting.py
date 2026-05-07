@@ -3,6 +3,19 @@ import os
 import json
 from frappe.custom.doctype.custom_field.custom_field import create_custom_field
 
+
+def after_install():
+    """Create default KSA VAT Settings for Saudi companies on fresh installs."""
+    make_custom_fields()
+
+    for company in frappe.get_all(
+        'Company',
+        filters={'country': 'Saudi Arabia'},
+        fields=['name', 'abbr']
+    ):
+        create_default_ksa_vat_setting(company.name, company.abbr)
+
+
 def create_ksa_vat_setting(self, method):
     """
     On creation of first company. Creates KSA VAT Setting"""
@@ -17,41 +30,66 @@ def create_ksa_vat_setting(self, method):
 
     if len(company_list) == 1 and len(ksa_vat_setting) == 0:
         make_custom_fields()
-        file_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'ksa_vat_settings.json')
-        with open(file_path, 'r') as json_file:
-            account_data = json.load(json_file)
-        
+        create_default_ksa_vat_setting(self.name, self.abbr)
 
-        # Creating KSA VAT Setting
-        ksa_vat_setting = frappe.get_doc({
-            'doctype': 'KSA VAT Setting',
-            'company': self.name
-        })
-        
-        for data in account_data:
-            if data['type'] == 'Sales Account':
-                for row in data['accounts']:
-                    item_tax_template = row['item_tax_template']
-                    account = row['account']
-                    ksa_vat_setting.append('ksa_vat_sales_accounts', {
-                        'title': row['title'],
-                        'item_tax_template': f'{item_tax_template} - {self.abbr}',
-                        'account': f'{account} - {self.abbr}'
-                    })
-                
-            elif data['type'] == 'Purchase Account':
-                for row in data['accounts']:
-                    item_tax_template = row['item_tax_template']
-                    account = row['account']
-                    ksa_vat_setting.append('ksa_vat_purchase_accounts', {
-                        'title': row['title'],
-                        'item_tax_template': f'{item_tax_template} - {self.abbr}',
-                        'account': f'{account} - {self.abbr}'
-                    })
 
-        ksa_vat_setting.save()
+def create_default_ksa_vat_setting(company, company_abbr):
+    if frappe.db.exists('KSA VAT Setting', {'company': company}):
+        return
+
+    file_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'ksa_vat_settings.json')
+    with open(file_path, 'r') as json_file:
+        account_data = json.load(json_file)
+
+    ksa_vat_setting = frappe.get_doc({
+        'doctype': 'KSA VAT Setting',
+        'company': company
+    })
+
+    for data in account_data:
+        if data['type'] == 'Sales Account':
+            for row in data['accounts']:
+                item_tax_template = row['item_tax_template']
+                item_tax_template = get_company_record_name(item_tax_template, company_abbr)
+                ksa_vat_setting.append('ksa_vat_sales_accounts', {
+                    'title': row['title'],
+                    'item_tax_template': item_tax_template,
+                    'account': get_tax_account(item_tax_template, row['account'], company_abbr)
+                })
+
+        elif data['type'] == 'Purchase Account':
+            for row in data['accounts']:
+                item_tax_template = row['item_tax_template']
+                item_tax_template = get_company_record_name(item_tax_template, company_abbr)
+                ksa_vat_setting.append('ksa_vat_purchase_accounts', {
+                    'title': row['title'],
+                    'item_tax_template': item_tax_template,
+                    'account': get_tax_account(item_tax_template, row['account'], company_abbr)
+                })
+
+    ksa_vat_setting.save()
+
+
+def get_company_record_name(record_name, company_abbr):
+    return f'{record_name} - {company_abbr}'
+
+
+def get_tax_account(item_tax_template, fallback_account, company_abbr):
+    tax_account = frappe.db.get_value(
+        'Item Tax Template Detail',
+        {'parent': item_tax_template},
+        'tax_type'
+    )
+
+    if tax_account:
+        return tax_account
+
+    return get_company_record_name(fallback_account, company_abbr)
 
 def make_custom_fields():
+    if frappe.db.exists('Custom Field', 'Sales Invoice-qr_code'):
+        return
+
     qr_code_field = dict(
         fieldname='qr_code', 
         label='QR Code', 
