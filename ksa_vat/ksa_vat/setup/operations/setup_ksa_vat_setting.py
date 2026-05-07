@@ -9,6 +9,7 @@ def after_install():
     make_custom_fields()
     ensure_setup_page()
     ensure_workspace()
+    sync_accounting_workspace()
 
     for company in frappe.get_all(
         'Company',
@@ -251,6 +252,59 @@ def ensure_workspace():
         os.path.dirname(__file__), '..', '..', 'workspace', 'ksa_vat', 'ksa_vat.json'
     )
     ensure_standard_doc(workspace_path)
+
+
+def sync_accounting_workspace():
+    if not frappe.db.exists('Workspace', 'Accounting'):
+        return
+
+    accounting = frappe.get_doc('Workspace', 'Accounting')
+    content = json.loads(accounting.content or '[]')
+    content_ids = {row.get('id') for row in content}
+
+    ksa_vat_content = [
+        {'id': 'ksa_vat_header', 'type': 'header', 'data': {'text': 'KSA VAT', 'level': 4, 'col': 12}},
+        {'id': 'ksa_vat_setup', 'type': 'shortcut', 'data': {'shortcut_name': 'KSA VAT Setup Wizard', 'col': 3}},
+        {'id': 'ksa_vat_report', 'type': 'shortcut', 'data': {'shortcut_name': 'KSA VAT Report', 'col': 3}},
+        {'id': 'ksa_vat_setting', 'type': 'shortcut', 'data': {'shortcut_name': 'KSA VAT Setting', 'col': 3}},
+        {
+            'id': 'ksa_vat_item_tax_template',
+            'type': 'shortcut',
+            'data': {'shortcut_name': 'Item Tax Template', 'col': 3}
+        }
+    ]
+
+    for row in ksa_vat_content:
+        if row['id'] not in content_ids:
+            content.append(row)
+
+    accounting.content = json.dumps(content)
+
+    ensure_workspace_shortcut(accounting, 'KSA VAT Setup Wizard', 'Page', 'ksa-vat-setup', 'Blue')
+    ensure_workspace_shortcut(accounting, 'KSA VAT Report', 'Report', 'KSA VAT', 'Green')
+    ensure_workspace_shortcut(accounting, 'KSA VAT Setting', 'DocType', 'KSA VAT Setting', 'Orange', 'List')
+    ensure_workspace_shortcut(accounting, 'Item Tax Template', 'DocType', 'Item Tax Template', 'Purple', 'List')
+
+    accounting.flags.ignore_version = True
+    accounting.save(ignore_permissions=True)
+
+
+def ensure_workspace_shortcut(workspace, label, shortcut_type, link_to, color, doc_view=''):
+    for shortcut in workspace.shortcuts:
+        if shortcut.label == label:
+            shortcut.type = shortcut_type
+            shortcut.link_to = link_to
+            shortcut.color = color
+            shortcut.doc_view = doc_view
+            return
+
+    workspace.append('shortcuts', {
+        'label': label,
+        'type': shortcut_type,
+        'link_to': link_to,
+        'color': color,
+        'doc_view': doc_view
+    })
 
 
 def ensure_setup_page():

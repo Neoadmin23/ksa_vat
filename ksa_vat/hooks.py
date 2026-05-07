@@ -58,6 +58,7 @@ app_license = "MIT"
 
 # before_install = "ksa_vat.install.before_install"
 after_install = "ksa_vat.ksa_vat.setup.operations.setup_ksa_vat_setting.after_install"
+after_migrate = ["ksa_vat.ksa_vat.setup.operations.setup_ksa_vat_setting.sync_accounting_workspace"]
 
 # Desk Notifications
 # ------------------
