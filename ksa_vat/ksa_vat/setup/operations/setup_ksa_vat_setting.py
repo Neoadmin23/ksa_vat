@@ -259,6 +259,7 @@ def sync_accounting_workspace():
         return
 
     accounting = frappe.get_doc('Workspace', 'Accounting')
+    remove_missing_workspace_shortcuts(accounting)
     content = json.loads(accounting.content or '[]')
     content_ids = {row.get('id') for row in content}
 
@@ -289,7 +290,29 @@ def sync_accounting_workspace():
     accounting.save(ignore_permissions=True)
 
 
+def remove_missing_workspace_shortcuts(workspace):
+    for shortcut in list(workspace.shortcuts):
+        if not is_valid_workspace_shortcut(shortcut.type, shortcut.link_to):
+            workspace.remove(shortcut)
+
+
+def is_valid_workspace_shortcut(shortcut_type, link_to):
+    if not link_to or shortcut_type not in ('DocType', 'Page', 'Report'):
+        return True
+
+    target_doctype = {
+        'DocType': 'DocType',
+        'Page': 'Page',
+        'Report': 'Report',
+    }.get(shortcut_type)
+
+    return frappe.db.exists(target_doctype, link_to)
+
+
 def ensure_workspace_shortcut(workspace, label, shortcut_type, link_to, color, doc_view=''):
+    if not is_valid_workspace_shortcut(shortcut_type, link_to):
+        return
+
     for shortcut in workspace.shortcuts:
         if shortcut.label == label:
             shortcut.type = shortcut_type
